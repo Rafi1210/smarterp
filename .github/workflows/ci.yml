@@ -1,0 +1,40 @@
+name: SmartERP checks
+on:
+  push:
+    branches: [staging, main]
+  pull_request:
+    branches: [staging, main]
+permissions:
+  contents: read
+concurrency:
+  group: smarterp-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_ENV: test
+      APP_MODE: demo
+      AI_ENABLED: 'false'
+      SMARTERP_SKIP_ENV_FILE: '1'
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - name: Checkout complete history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Node 24 with exact npm lockfile
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run repo:check
+      - run: npm run security:deps
+      - run: npm run verify:quick
+      - run: npm run test:release
+      - run: npm run test:integration
+      - run: npm run build
+      - run: npm run test:http

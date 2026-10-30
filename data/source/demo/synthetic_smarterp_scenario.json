@@ -1,0 +1,50 @@
+{
+  "dataset_origin": "synthetic_learning_scenario",
+  "notice": "Illustrative SmartERP scenario; not real Ahsan Group transactions, wages, customers or operational figures.",
+  "company_code": "SMER-DEMO-COMPANY",
+  "currency": "BDT",
+  "warehouse_count": 1,
+  "raw_material": {
+    "item_code": "DEMO-FAB-001",
+    "name": "Finished fabric",
+    "uom": "kg",
+    "opening_qty": 1400,
+    "purchase_rate_bdt_per_kg": 500
+  },
+  "product": {
+    "item_code": "DEMO-TSH-001",
+    "name": "Basic T-shirt",
+    "uom": "piece",
+    "fabric_kg_per_piece": "0.22"
+  },
+  "sales_order": {
+    "external_id": "DEMO-SO-001",
+    "buyer": "Demo Buyer 01",
+    "quantity": 10000,
+    "unit_price_bdt": 450
+  },
+  "procurement": {
+    "supplier": "Demo Supplier 01",
+    "purchase_quantity_kg": 800,
+    "supplier_invoice_bdt": 400000,
+    "supplier_payment_bdt": 400000
+  },
+  "customer_payment_bdt": 2000000,
+  "payroll": {
+    "employee_code": "DEMO-EMP-001",
+    "basic_bdt": 20000,
+    "allowance_bdt": 8000,
+    "approved_extra_bdt": 2000,
+    "approved_deduction_bdt": 1000,
+    "net_payment_bdt": 29000
+  },
+  "expected_results": {
+    "fabric_required_kg": 2200,
+    "shortage_kg": 800,
+    "sales_invoice_bdt": 4500000,
+    "customer_receivable_bdt": 2500000,
+    "supplier_payable_after_payment_bdt": 0,
+    "selected_event_net_cash_movement_bdt": 1571000
+  },
+  "accounting_scope": "Operational invoices, AR/AP, allocated payments and cashbook; not full statutory accounting or payroll."
+}

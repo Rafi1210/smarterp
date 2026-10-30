@@ -1,0 +1,2 @@
+require('./env.cjs');const {database,assertContext}=require('../src/lib/db.js');const {COMPANY,DEMO}=require('../src/lib/registry.js');const {preparePeople}=require('../src/lib/services/finance.js');
+(async()=>{const db=database();try{await assertContext(db);console.log((await preparePeople(db,{company_id:COMPANY,dataset_id:DEMO})).message);}finally{await db.destroy()}})().catch(e=>{console.error(e.message);process.exitCode=1});

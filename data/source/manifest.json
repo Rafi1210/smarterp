@@ -1,0 +1,90 @@
+{
+  "prepared_date": "2026-10-29",
+  "files": [
+    {
+      "path": "README_Bangla.md",
+      "bytes": 6401,
+      "sha256": "439ae13153fbbe4f5174691df2a34c85b8fa917952c09a17d0137d0993863268"
+    },
+    {
+      "path": "data_profile.json",
+      "bytes": 1169,
+      "sha256": "e7e6043b11141b9950656c6159587743b82bc7705c2236edf5f625dc470c16b9"
+    },
+    {
+      "path": "demo/synthetic_smarterp_scenario.json",
+      "bytes": 1489,
+      "sha256": "16798ee8011f13038f8d205629ed8082bc5ad5c65a01b369e08e632e59afd8a6"
+    },
+    {
+      "path": "garment_productivity/garments_worker_productivity.csv",
+      "bytes": 94933,
+      "sha256": "763ffcdd39b7f7f360243c2af8f89ed733e8b5f9e511efeb0c886b83e1b76866"
+    },
+    {
+      "path": "licenses/Northwind_MIT.txt",
+      "bytes": 1075,
+      "sha256": "c28e204be6418b87ae1c83127096aad9c9e1a218c365f8f4d630e84d8ba96c47"
+    },
+    {
+      "path": "licenses/UCI_CC_BY_4_Attribution.txt",
+      "bytes": 618,
+      "sha256": "0cab17647a4b33a016e5afbe6f3428275b6bb4346c828678edd7b3f2331d9c06"
+    },
+    {
+      "path": "northwind/json/categories.json",
+      "bytes": 927,
+      "sha256": "5d95c7ec1f35018e7e95f4fe5e79b40ca7c141145c8151db781b8e2c1b98eace"
+    },
+    {
+      "path": "northwind/json/customers.json",
+      "bytes": 31658,
+      "sha256": "bc082bee0e4196c08fe3d4ae1b79e73fba3b1e2d09793f8ac9d8db7f7a55bbc7"
+    },
+    {
+      "path": "northwind/json/employees.json",
+      "bytes": 6866,
+      "sha256": "63aa09617ac145accf840ff4cf51e3d13b677a2ef56573381a64c7d9177720fb"
+    },
+    {
+      "path": "northwind/json/order_details.json",
+      "bytes": 245782,
+      "sha256": "cff134d4691317d51a36d04d088fde6e18bb8dff13bb679f42a90410dab67b67"
+    },
+    {
+      "path": "northwind/json/orders.json",
+      "bytes": 371046,
+      "sha256": "902aac76595d2fcb0b91372c9cc9cd2496d39fed4bac547fe17d4bb757d62782"
+    },
+    {
+      "path": "northwind/json/products.json",
+      "bytes": 20841,
+      "sha256": "55b7d125b65d0450d9344d7396193438eb5175be857e58413902a9cbef9bf780"
+    },
+    {
+      "path": "northwind/json/shippers.json",
+      "bytes": 292,
+      "sha256": "bcaf2a1438070ab3f28ad1b9d61c68b328a7c370107b429b30ee72129a1a5d49"
+    },
+    {
+      "path": "northwind/json/suppliers.json",
+      "bytes": 10745,
+      "sha256": "3ac0b96db190078a0e783bc658687e084ddb822daca6f2b3bed027762083c74c"
+    },
+    {
+      "path": "northwind/source/create.sql",
+      "bytes": 905016,
+      "sha256": "5854b536dea3fe8c586223bf7b47a793727dd44c34fc32537a68a97fec8e2f4b"
+    },
+    {
+      "path": "specification/Chart_Definitions.json",
+      "bytes": 1855,
+      "sha256": "ce7db9959ae2f5f31b5e730d40671a4d8ff68f94ab6db85f6c2f75e879fe1010"
+    },
+    {
+      "path": "specification/Mandatory_Features.md",
+      "bytes": 7834,
+      "sha256": "71716e71e23f6de017b73a04fc4e484b2720796a504f5fe5981cbe8581abbeeb"
+    }
+  ]
+}

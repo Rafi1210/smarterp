@@ -1,0 +1,48 @@
+{
+  "sources": {
+    "northwind": {
+      "url": "https://github.com/jpwhite3/northwind-SQLite3",
+      "raw_sql_sha256": "3c412230af02f920caadc1510fab1f4bdc03ea2f017d3f108386712700a6c8e0",
+      "counts": {
+        "Customers": 93,
+        "Suppliers": 29,
+        "Products": 77,
+        "Categories": 8,
+        "Employees": 9,
+        "Orders": 830,
+        "Order Details": 2155,
+        "Shippers": 3
+      },
+      "date_range": [
+        "1996-07-04 00:00:00.000",
+        "1998-05-06 00:00:00.000"
+      ],
+      "foreign_key_violations": 0,
+      "omitted_binary_columns": {
+        "Categories": [
+          "Picture"
+        ],
+        "Employees": [
+          "Photo"
+        ]
+      }
+    },
+    "uci": {
+      "url": "https://archive.ics.uci.edu/dataset/597/productivity+prediction+of+garment+employees",
+      "rows": 1197,
+      "date_range": [
+        "2015-01-01",
+        "2015-03-11"
+      ],
+      "missing_wip": 506,
+      "departments_raw": [
+        "finishing",
+        "finishing ",
+        "sweing"
+      ],
+      "productivity_above_one": 37,
+      "fractional_worker_counts": 140,
+      "duplicate_date_department_team_keys": 0
+    }
+  }
+}

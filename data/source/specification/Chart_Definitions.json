@@ -1,0 +1,51 @@
+[
+  {
+    "id": "northwind_order_value_by_month",
+    "dataset": "northwind",
+    "group_by": "OrderDate calendar month",
+    "formula": "SUM(OrderDetails.UnitPrice * Quantity * (1 - Discount))",
+    "join": "Orders.OrderID = OrderDetails.OrderID",
+    "label": "Historical order line value (source price units)",
+    "exclude": "Freight; not recognized revenue or collected cash"
+  },
+  {
+    "id": "northwind_orders_by_customer",
+    "dataset": "northwind",
+    "group_by": "CustomerID",
+    "formula": "COUNT(DISTINCT Orders.OrderID)",
+    "join": "Orders.CustomerID = Customers.CustomerID",
+    "label": "Historical order count"
+  },
+  {
+    "id": "northwind_value_by_category",
+    "dataset": "northwind",
+    "group_by": "Categories.CategoryName",
+    "formula": "SUM(OrderDetails.UnitPrice * Quantity * (1 - Discount))",
+    "join": "OrderDetails -> Products -> Categories",
+    "label": "Historical order line value by category (source price units)"
+  },
+  {
+    "id": "uci_productivity_by_date",
+    "dataset": "uci_garment",
+    "group_by": "date",
+    "formula": "AVG(actual_productivity), AVG(targeted_productivity)",
+    "label": "Mean team-day productivity (unweighted)",
+    "note": "Not exact factory productivity; no ratio denominator/output weights provided"
+  },
+  {
+    "id": "uci_overtime_by_department",
+    "dataset": "uci_garment",
+    "group_by": "normalized department",
+    "formula": "SUM(over_time)",
+    "label": "Recorded team overtime (minutes)",
+    "note": "Do not infer salary cost or per-employee hours"
+  },
+  {
+    "id": "smarterp_ar_ap",
+    "dataset": "synthetic_smarterp",
+    "group_by": "party",
+    "formula": "Confirmed invoice amount minus allocated receipts/payments",
+    "label": "Outstanding AR / AP (BDT)",
+    "note": "Requires implemented invoices and payments; not derived from Northwind orders"
+  }
+]

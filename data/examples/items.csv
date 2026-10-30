@@ -1,0 +1,3 @@
+external_id,name,uom,kind,reorder_level
+CSV-FABRIC-001,Sample fabric,kg,raw,100
+CSV-SHIRT-001,Sample T-shirt,pieces,finished,100

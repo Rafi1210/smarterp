@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build:deploy"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "24"
+  NPM_FLAGS = "--include=dev"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# APP_ENV, APP_MODE, APP_URL, DATABASE_URL and AI_ENABLED belong in the Netlify UI.
+# On Free use all scopes; toml environment values do not reach Functions runtime.
+# The verified build accepts main/production or staging in a dedicated staging
+# project (production context) or as a staging branch deploy.
+# Deploy Previews and all other branches stop before database access.
+# No automatic migration, seed, account setup or allowance reset runs on deploy.

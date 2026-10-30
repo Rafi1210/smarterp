@@ -1,0 +1,2 @@
+require('./env.cjs');const {database,assertContext}=require('../src/lib/db.js');const {prepareDemo}=require('../src/lib/services/workflow.js');const {COMPANY,DEMO}=require('../src/lib/registry.js');
+(async()=>{const db=database();try{await assertContext(db);const result=await prepareDemo(db,{company_id:COMPANY,dataset_id:DEMO});console.log(result.message);}finally{await db.destroy()}})().catch(e=>{console.error(e.message);process.exitCode=1});

@@ -1,0 +1,55 @@
+{
+  "name": "smarterp",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "test": "node --test tests/unit.test.cjs",
+    "test:integration": "node --test --test-concurrency=1 tests/integration.test.mjs tests/workspace.test.mjs tests/identity-ai.test.mjs tests/deployment.test.mjs",
+    "verify:quick": "npm test && npm run data:verify",
+    "build:deploy": "node scripts/netlify-build.cjs",
+    "db:migrate": "node scripts/migrate.cjs",
+    "db:seed:demo": "node scripts/seed-demo.cjs",
+    "db:seed:history": "node scripts/seed-history.cjs",
+    "db:check": "node scripts/check-integrity.cjs",
+    "data:verify": "node scripts/verify-sources.cjs",
+    "db:local": "node scripts/local-db.mjs",
+    "smoke:live": "node scripts/smoke-live.mjs",
+    "db:seed:workflow": "node scripts/seed-workflow.cjs",
+    "test:http": "node scripts/verify-http.mjs",
+    "db:seed:people": "node scripts/seed-people.cjs",
+    "auth:setup": "node scripts/setup-auth.cjs",
+    "repo:check": "node scripts/repo-check.cjs",
+    "profile": "node scripts/run-profile.cjs",
+    "deploy:check": "node scripts/deploy-preflight.cjs",
+    "test:release": "node --test tests/release-tools.test.cjs",
+    "security:deps": "npm audit --omit=dev --audit-level=high --fetch-retries=0 --fetch-timeout=15000"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "1.3.1",
+    "@radix-ui/react-slot": "1.5.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "knex": "3.3.0",
+    "lucide-react": "1.64.0",
+    "next": "16.4.3",
+    "papaparse": "5.7.0",
+    "pg": "8.23.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "recharts": "3.10.1",
+    "tailwind-merge": "3.7.0",
+    "tailwindcss": "4.3.3",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.13",
+    "@electric-sql/pglite-socket": "0.2.16"
+  }
+}

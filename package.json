@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "test": "node --test tests/unit.test.cjs",
-    "test:integration": "node --test --test-concurrency=1 tests/integration.test.mjs tests/workspace.test.mjs tests/identity-ai.test.mjs tests/deployment.test.mjs tests/usability.test.mjs tests/business-reports.test.mjs",
+    "test:integration": "node --test --test-concurrency=1 tests/integration.test.mjs tests/workspace.test.mjs tests/identity-ai.test.mjs tests/deployment.test.mjs tests/usability.test.mjs tests/business-reports.test.mjs tests/order-control.test.mjs",
     "verify:quick": "npm test && npm run data:verify && npm run data:verify:business",
     "build:deploy": "node scripts/netlify-build.cjs",
     "db:migrate": "node scripts/migrate.cjs",
@@ -29,7 +29,8 @@
     "deploy:check": "node scripts/deploy-preflight.cjs",
     "test:release": "node --test tests/release-tools.test.cjs",
     "security:deps": "npm audit --omit=dev --audit-level=high --fetch-retries=0 --fetch-timeout=15000",
-    "data:verify:business": "node scripts/verify-business-pack.cjs"
+    "data:verify:business": "node scripts/verify-business-pack.cjs",
+    "test:order-control": "node --test --test-concurrency=1 tests/order-control.test.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "1.3.1",

@@ -1,4 +1,4 @@
-const {assertCreate,assertBatch,restrictBatches}=require('../resource-access.js');const {actorLabel,currentUser}=require('../actor.js');
+const {assertRead,assertCreate,assertBatch,restrictBatches}=require('../resource-access.js');const {actorLabel,currentUser}=require('../actor.js');
 const Papa = require('papaparse');
 const { randomUUID } = require('node:crypto');
 const { fail, hash, stableHash, integer, safeCell } = require('../core.js');
@@ -20,6 +20,7 @@ function parseCSV(buffer) {
   return { headers:trimmed,rows:parsed.data,fileHash:hash(buffer) };
 }
 function mappingFor(cfg,headers,supplied) {
+  fail(supplied==null||typeof supplied==='object'&&!Array.isArray(supplied)&&Object.keys(supplied).length<=80&&Object.values(supplied).every(v=>typeof v==='string'),'Column mapping must be an object with at most 80 string values.');
   const mapping = {};
   for(const f of cfg.fields) {
     const h = supplied && Object.hasOwn(supplied,f.key) ? supplied[f.key] : headers.find(h=>h.toLowerCase().replace(/[\s-]/g,'_')===f.key.toLowerCase()) || '';
@@ -77,11 +78,15 @@ async function preview(db,scope,{resource,buffer,filename,mapping}) {
   });
   return getBatch(db,scope,id,1);
 }
-async function getBatch(db,scope,id,page=1) {
+async function getBatch(db,scope,id,page=1,issue='all') {
   const batch=await db('import_batches').where({...scope,id}).first(); fail(batch,'Import batch not found.',404);assertBatch(batch);
   page=integer(String(page),'Page',{min:1,max:10000});
-  const documents=await db('import_documents').where({batch_id:id}).orderBy('position').limit(50).offset((page-1)*50).select('position','external_id','rows','issues','outcome','record_id');
-  return {...batch,documents,page,pages:Math.max(1,Math.ceil(batch.document_count/50))};
+  fail(['all','error','warning'].includes(issue),'Choose all documents, errors or warnings.');
+  const query=db('import_documents').where({batch_id:id});
+  if(issue!=='all')query.whereRaw('issues @> ?::jsonb',[JSON.stringify([{severity:issue}])]);
+  const count=issue==='all'?batch.document_count:Number((await query.clone().count('* as n').first()).n);
+  const documents=await query.clone().orderBy('position').limit(50).offset((page-1)*50).select('position','external_id','rows','issues','outcome','record_id');
+  return {...batch,documents,page,issue,matching_documents:count,pages:Math.max(1,Math.ceil(count/50))};
 }
 async function commit(db,scope,id) {
   // Serialize one chunk per batch; each document is imported inside a savepoint.
@@ -152,5 +157,5 @@ async function errorCSV(db,scope,id) {
   const docs=await db('import_documents').where({batch_id:id}).orderBy('position').select('issues');
   return csv(docs.flatMap(d=>d.issues),['severity','row','external_id','field','value','reason']);
 }
-async function history(db,scope,page=1){page=integer(String(page),'Page',{min:1,max:10000});const q=restrictBatches(db('import_batches').where(scope));const n=await q.clone().count('* as n').first();return {data:await q.clone().select('id','resource','filename','status','row_count','document_count','cursor','imported','skipped','error_count','warning_count','created_at').orderBy('created_at','desc').limit(25).offset((page-1)*25),page,pages:Math.max(1,Math.ceil(Number(n.n)/25)),total:Number(n.n)};}
+async function history(db,scope,page=1,resource=''){page=integer(String(page),'Page',{min:1,max:10000});const q=restrictBatches(db('import_batches').where(scope));if(resource){getResource(resource,scope.dataset_id);assertRead(resource);q.where({resource});}const n=await q.clone().count('* as n').first();return {data:await q.clone().select('id','resource','filename','status','row_count','document_count','cursor','imported','skipped','error_count','warning_count','created_at').orderBy('created_at','desc').orderBy('id','desc').limit(25).offset((page-1)*25),page,pages:Math.max(1,Math.ceil(Number(n.n)/25)),total:Number(n.n)};}
 module.exports={history,LIMIT_BYTES,LIMIT_ROWS,parseCSV,mappingFor,preview,getBatch,commit,cancel,csv,exportRecords,errorCSV};

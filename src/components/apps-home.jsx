@@ -5,6 +5,7 @@ import {ShoppingBag,Truck,Boxes,Factory,Wallet,Users,ChartNoAxesCombined,Upload,
 import {useSession} from './session-context';import {canRead,canCreate} from '@/lib/permissions';
 import {Button} from './ui/button';
 const apps=[
+ {id:'order-control',label:'Order Control',subtitle:'Blockers, responsible roles & next steps',icon:ClipboardCheck,color:'#7b83b7',bg:'#eef0fc',target:['Order Control','sales','','smarterp-demo','order-control'],resource:'sales',unit:'orders'},
  {id:'sales',label:'Sales',subtitle:'Inquiries, quotes & orders',icon:ShoppingBag,color:'#5686c4',bg:'#eaf1fc',target:['Sales / CRM','sales'],resource:'sales',unit:'documents'},
  {id:'contacts',label:'Customers',subtitle:'Buyer records & related orders',icon:Users,color:'#39a185',bg:'#e6f7ef',target:['Sales / CRM','customers'],resource:'customers',unit:'buyers'},
  {id:'merch',label:'Merchandising',subtitle:'Style review & order handover',icon:ClipboardCheck,color:'#cc9456',bg:'#fff3e5',target:['Merchandising','merchandising'],resource:'merchandising',unit:'order sheets'},

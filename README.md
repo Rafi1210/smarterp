@@ -1,3 +1,5 @@
+**[Open SmartERP Live](https://demo-smarterp.netlify.app/)** · **[Demo login credentials](DEMO_LOGIN.txt)**
+
 # SmartERP
 
 ### Connected garment operations, from buyer inquiry to payment.
@@ -6,11 +8,11 @@
 ![Node.js](https://img.shields.io/badge/Node.js-24-5fa04e?logo=nodedotjs&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-f7df1e?logo=javascript&logoColor=222222)
 
-**[Live app](https://demo-smarterp.netlify.app/login)** · **[Workflow](#workflow)** · **[Architecture](#architecture)** · **[Setup](#run-locally)** · **[Scope](#current-scope)**
+**[Workflow](#workflow)** · **[Architecture](#architecture)** · **[Setup](#run-locally)** · **[Scope](#current-scope)**
 
 SmartERP is a modular Enterprise Resource Planning application connecting sales, merchandising, purchasing, inventory, manufacturing, finance and payroll through traceable documents.
 
-**The case study:** replace disconnected registers with a workflow that answers *what is blocked, who acts next, and which document needs attention*. The hosted app uses synthetic data and requires an account; credentials are not published.
+**The case study:** replace disconnected registers with a workflow that answers *what is blocked, who acts next, and which document needs attention*. The hosted app uses synthetic data and requires an account.
 
 ![SmartERP overview: saved order metrics, receivables and selected-event cash movement](docs/screenshots/overview.png)
 

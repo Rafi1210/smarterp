@@ -1,0 +1,6 @@
+SmartERP Demo Login
+
+Live site: https://demo-smarterp.netlify.app/
+
+Email: ADD_DEMO_EMAIL_HERE
+Password: ADD_DEMO_PASSWORD_HERE

@@ -2,5 +2,9 @@ SmartERP Demo Login
 
 Live site: https://demo-smarterp.netlify.app/
 
-Email: ADD_DEMO_EMAIL_HERE
-Password: ADD_DEMO_PASSWORD_HERE
+# admin email: admin@smarterp.local
+# Password: zpPms4mHVm6DUt-2Zg3csaE5
+# operations email: operations@smarterp.local
+# Password: 8jobnZZC6RmnY4mXKOrUz885
+# finance email: finance@smarterp.local
+# Password: oPi_Q-lYV9xBCghMzX19rEZp

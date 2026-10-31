@@ -28,7 +28,7 @@ test('automatic numbering retries reuse the same document and imports keep suppl
  const {createDraft}=require('../src/lib/services/records.js');const requestKey=randomUUID();const rows=[{external_id:'',name:'Auto numbered buyer',country:'BD'}];
  const a=await createDraft(db,scope,'customers',rows,requestKey),b=await createDraft(db,scope,'customers',rows,requestKey);assert.match(a.record.external_id,/^CUS-\d{4}-\d{5}$/);assert.equal(a.record.id,b.record.id);assert.equal(b.skipped,true);
  await assert.rejects(createDraft(db,scope,'customers',[{...rows[0],name:'Changed'}],requestKey),/different inputs/);
- const c=await createDraft(db,scope,'customers',rows,randomUUID());assert.notEqual(a.record.external_id,c.record.external_id);
+ const c=await createDraft(db,scope,'customers',rows.map(row=>({...row,name:'Another numbered buyer'})),randomUUID());assert.notEqual(a.record.external_id,c.record.external_id);
 });
 test('another order cannot reserve fabric already allocated; cancelling releases it safely',async()=>{
  const fabric=await create('items',{external_id:'FABRIC-RES',name:'Reserved fabric',uom:'kg',kind:'raw'}),fg=await create('items',{external_id:'FG-RES',name:'Reserve test style',uom:'pieces',kind:'finished'});

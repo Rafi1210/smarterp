@@ -20,7 +20,7 @@ const registry = {
   receipts: { label: 'Goods receipts', module: 'Purchases', fields: [field('external_id'),field('purchase_id'),field('date')], chart: 'Goods receipts by state' },
   deliveries: { label: 'Deliveries', module: 'Sales', fields: [field('external_id'),field('workorder_id'),field('date')], chart: 'Deliveries by state' },
   movements: { label: 'Stock movement ledger', module: 'Inventory', readOnly: true, fields: [], chart: 'Movements by kind' },
-  customers: { label: 'Customers', module: 'Sales', fields: [...basic, field('email', 'Email', false), field('country', 'Country', false)], chart: 'Customers by country' },
+  customers: { label: 'Buyers / Customers', module: 'Sales', fields: [...basic, field('email', 'Email', false), field('country', 'Country', false),field('phone','Phone',false),field('contact_person','Contact person',false),field('address','Business address',false),field('registration_no','Registration / buyer reference',false)], chart: 'Buyers by country' },
   suppliers: { label: 'Suppliers', module: 'Purchases', fields: [...basic, field('email', 'Email', false), field('country', 'Country', false)], chart: 'Suppliers by country' },
   items: { label: 'Items', module: 'Inventory', fields: [...basic, field('uom', 'Unit: kg or pieces'), field('kind', 'raw or finished'), field('reorder_level', 'Reorder level', false)], chart: 'Items by base unit' },
   employees: { label: 'Employees', module: 'People', fields: [...basic, field('department', 'Department')], chart: 'Headcount by department' },
@@ -53,6 +53,10 @@ async function normalize(db, scope, resource, rawRows) {
   const ref = async (type, ext) => {
     const found = await db('records').where({ ...scope, resource: type, external_id: ext }).first();
     fail(found, `${type} reference '${ext}' does not exist in this company and namespace.`);
+    if(scope.dataset_id===DEMO&&(['Deleted','Archived','Cancelled','Reversed'].includes(found.status)||(['customers','suppliers','items','employees'].includes(type)&&found.status!=='Active'))){
+      const replay=data.external_id?await db('records').where({...scope,resource,external_id:data.external_id}).select('id').first():null;
+      fail(replay,`${type} '${ext}' is inactive. Select or restore an active record before creating a new document.`,409);
+    }
     refs.push({ id: found.id, relation: type }); return found;
   };
   if (resource === 'productivity') {
@@ -110,6 +114,7 @@ async function normalize(db, scope, resource, rawRows) {
   } else if (['customers','suppliers'].includes(resource)) {
     name = text(data.name, 'Name');
     if (data.email) fail(z.email().safeParse(data.email).success, 'Email address is invalid.');
+    if(resource==='customers'&&scope.dataset_id===DEMO)for(const [key,max]of [['phone',40],['contact_person',160],['address',500],['registration_no',100]])if(data[key])text(data[key],key,max);
   } else if (resource === 'items') {
     name = text(data.name, 'Name'); fail(['kg','pieces'].includes(data.uom), 'Unit must be kg or pieces.'); fail(['raw','finished'].includes(data.kind), 'Item kind must be raw or finished.');
     data.base_uom = data.uom === 'kg' ? 'g' : 'pieces'; data.reorder_base = data.uom === 'kg' ? exact(data.reorder_level || '0',3,'Reorder level') : String(integer(data.reorder_level || '0','Reorder level'));

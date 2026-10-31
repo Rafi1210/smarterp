@@ -5,7 +5,7 @@ import {ArrowRight,CheckCircle2,Printer,AlertCircle} from 'lucide-react';
 import DocumentSummary from './document-summary';
 import BusinessDocument from './business-document';import {useSession} from './session-context';import {canAction,canSubmit} from '@/lib/permissions';import {nextLabel} from '@/lib/workspace-flows';
 import {Button} from './ui/button';import {Modal} from './ui/modal';import {StatusBadge} from './ui/status-badge';
-import RecordPicker from './record-picker';import OrderJourney from './order-journey';import {resourceLabel} from '@/lib/status';import {REVIEWS,MILESTONES,TASK_ACTIONS} from '@/lib/workspace-config';
+import RecordPicker from './record-picker';import RecordLifecycle from './record-lifecycle';import OrderJourney from './order-journey';import {resourceLabel} from '@/lib/status';import {REVIEWS,MILESTONES,TASK_ACTIONS} from '@/lib/workspace-config';
 const actions={
  tasks:{Draft:[['start_task','Start milestone'],['complete_task','Complete milestone'],['reschedule_task','Reschedule'],['cancel_task','Cancel milestone']],InProgress:[['complete_task','Complete milestone'],['reschedule_task','Reschedule'],['cancel_task','Cancel milestone']]},
  openings:{Draft:[['post_opening','Post opening stock']]},bom:{Draft:[['approve_bom','Approve BOM']]},
@@ -60,6 +60,7 @@ export default function RecordDetail({record,dataset,onChanged,onRelated,onRevie
  return <div data-print-document><div className="document-heading"><div><span className="eyebrow">{resourceLabel(record.resource,record.data.kind)}</span><h3>{record.external_id}</h3><p>{record.name.replace(record.external_id+' · ','')}</p></div><StatusBadge status={record.status}/></div>
  <div className="document-tabs no-print">{[['summary','Summary & next step'],['related','Related documents'],['history','Activity history']].map(([id,label])=><button key={id} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}{id==='related'&&<span>{record.related.length}</span>}</button>)}</div>
  {tab==='summary'&&<>
+ <RecordLifecycle record={record} dataset={dataset} onChanged={onChanged} onRelated={onRelated}/>
  <DocumentSummary record={record}/>
  <OrderJourney journey={record.journey} onRecord={onRelated} currentID={record.id}/>
  {(choices.length>0||canSubmitReview)&&<section className="next-action no-print"><span className="eyebrow">NEXT STEP</span><h4>{nextLabel(record.resource,record.status,role)}</h4><p>{canSubmitReview?'Submit the saved source for an independent approval.':choices[0]?messages[choices[0][0]]:'Review the source and related documents.'}</p><div className="toolbar">{canSubmitReview&&<Button variant="warning" onClick={()=>start(['submit_review',record.reviews?.length?'Submit a fresh review':'Request review'])}>Request review<ArrowRight size={15}/></Button>}{choices.map((a,i)=><Button key={a[0]} variant={['cancel_workorder','cancel_task'].includes(a[0])?'danger':i>0?'outline':['complete_task','qc_release','accept_receipt','dispatch','post_payment'].includes(a[0])?'success':['produce','create_workorder','create_ta_plan'].includes(a[0])?'violet':'default'} onClick={()=>start(a)}>{a[1]}{i===0&&<ArrowRight size={15}/>}</Button>)}</div></section>}

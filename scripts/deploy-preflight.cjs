@@ -13,7 +13,7 @@ async function check(providedDB) {
     const completed = new Set(await db('knex_migrations').pluck('name'));
     const pending = fs.readdirSync(path.resolve(__dirname, '../db/migrations')).filter(name => name.endsWith('.cjs') && !completed.has(name));
     if (pending.length) throw new Error('Apply pending additive migrations explicitly with the selected profile before deploying.');
-    const required = ['records', 'app_users', 'app_sessions', 'approval_requests', 'inventory_reservations', 'ai_allowance'];
+    const required = ['records', 'app_users', 'app_sessions', 'approval_requests', 'inventory_reservations', 'ai_allowance', 'payment_reversals'];
     for (const table of required) if (!await db.schema.hasTable(table)) throw new Error('Database schema is incomplete; apply explicit migrations.');
     const company = await db('companies').first('id');
     const buyer = company && await db('records').where({company_id: company.id, dataset_id: 'smarterp-demo', resource: 'customers'}).first('id');

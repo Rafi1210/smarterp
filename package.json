@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start --hostname 0.0.0.0",
     "test": "node --test tests/unit.test.cjs",
-    "test:integration": "node --test --test-concurrency=1 tests/integration.test.mjs tests/workspace.test.mjs tests/identity-ai.test.mjs tests/deployment.test.mjs",
+    "test:integration": "node --test --test-concurrency=1 tests/integration.test.mjs tests/workspace.test.mjs tests/identity-ai.test.mjs tests/deployment.test.mjs tests/usability.test.mjs",
     "verify:quick": "npm test && npm run data:verify",
     "build:deploy": "node scripts/netlify-build.cjs",
     "db:migrate": "node scripts/migrate.cjs",

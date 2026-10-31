@@ -52,6 +52,7 @@ async function preview(db,scope,{resource,buffer,filename,mapping}) {
       for(const warning of normalized.warnings||[]) issues.push({severity:'warning',row:rowsWithLine[0].__row,external_id:normalized.external_id,...warning,value:rows[0][warning.field]??''});
       const existing=await db('records').where({...scope,resource,external_id:normalized.external_id}).first();
       if(existing){const {lines=[],refs=[],warnings,...values}=normalized;fail(matchesHash(existing.content_hash,values,lines,refs),`External ID '${normalized.external_id}' exists with different content.`,409);}
+      if(resource==='customers'&&scope.dataset_id==='smarterp-demo'&&!existing){const candidates=await require('./buyers.js').matches(db,scope,{...normalized.data,name:normalized.name},normalized.external_id);if(candidates.matches.length)issues.push({severity:'warning',row:rowsWithLine[0].__row,external_id:normalized.external_id,field:'name',value:normalized.name,reason:'Possible duplicate buyer: '+candidates.matches.map(r=>r.external_id).join(', ')+'. Review these codes before committing; imports never merge buyers.'});}
       if(existing) issues.push({severity:'warning',row:rowsWithLine[0].__row,external_id:normalized.external_id,field:'external_id',value:normalized.external_id,reason:'Existing external ID: commit skips identical content and rejects differing content.'});
     } catch(e) { issues.push({severity:'error',row:rowsWithLine[0].__row,external_id:rows[0].external_id||'',field:'document',value:'',reason:e.status?e.message:'Validation could not complete. Try again.'}); }
     error_count+=issues.filter(i=>i.severity==='error').length; warning_count+=issues.filter(i=>i.severity==='warning').length;
@@ -65,6 +66,7 @@ async function preview(db,scope,{resource,buffer,filename,mapping}) {
   for(const duplicates of keys.values()) if(duplicates.length>1) for(const d of duplicates) {
     d.issues.push({severity:'error',row:d.rows[0].__row,external_id:d.external_id,field:'external_id',value:d.external_id,reason:'Duplicate business key within the file.'}); d.outcome='INVALID'; error_count++;
   }
+  if(resource==='customers'&&scope.dataset_id==='smarterp-demo'){const seen=new Map();for(const doc of documents){if(!doc.normalized)continue;const key=doc.normalized.name.trim().replace(/\s+/g,' ').toLowerCase();const previous=seen.get(key);if(previous){for(const d of [previous,doc]){d.issues.push({severity:'warning',row:d.rows[0].__row,external_id:d.external_id,field:'name',value:d.normalized.name,reason:'Another buyer in this file uses the same normalized name. Different codes create separate buyers.'});warning_count++;}}else seen.set(key,doc);}}
   if(currentUser()?.role==='operations'&&resource==='invoices')fail([...groups.values()].every(rows=>rows.every(row=>row.kind==='PURCHASE')),'Operations may import supplier bills only.',403);
   const access_group=resource==='invoices'&&[...groups.values()].every(rows=>rows.every(row=>row.kind==='PURCHASE'))?'operations':'finance';
   const id=randomUUID();

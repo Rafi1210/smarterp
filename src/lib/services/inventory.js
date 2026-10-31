@@ -24,7 +24,7 @@ async function move(trx,scope,source,item,eventID,kind,quantity,held=0n,reserved
   return record;
 }
 async function reserve(trx,scope,wo,so,plan,eventID){
-  const other=await trx('records').where({...scope,resource:'workorders'}).whereNot('id',wo.id).whereRaw("data->>'source_sales_id' = ?",[so.external_id]).whereNotIn('status',['Draft','Cancelled']).first();
+  const other=await trx('records').where({...scope,resource:'workorders'}).whereNot('id',wo.id).whereRaw("data->>'source_sales_id' = ?",[so.external_id]).whereNotIn('status',['Draft','Cancelled','Deleted','Archived']).first();
   fail(!other,'Another Work Order already reserves or has consumed this Sales Order.',409);
   fail(BigInt(plan.shortage)===0n,'Receive the material shortage before reserving production stock.',409);
   await move(trx,scope,wo,plan.component,eventID,'MATERIAL_RESERVATION',0n,0n,BigInt(plan.required));

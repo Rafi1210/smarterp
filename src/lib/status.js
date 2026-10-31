@@ -1,5 +1,6 @@
 // One shared semantic color per status across lists, details, reports and charts.
 const STATUSES={
+ Deleted:['Deleted draft','#a14457','#fff0f3'],Archived:['Archived','#64748b','#f1f5f9'],Reversed:['Reversed','#a75b78','#fff1f7'],
  Pending:['Pending review','#b7791f','#fff7e8'],Returned:['Returned','#c26638','#fff0e7'],InProgress:['In progress','#287fbb','#eaf5ff'],Done:['Completed','#24875a','#ecf9f1'],Overdue:['Overdue','#c84b52','#fff0f1'],
  Draft:['Draft','#64748b','#f1f5f9'],Quoted:['Quoted','#6366f1','#eef2ff'],Confirmed:['Confirmed','#2563eb','#eff6ff'],
  Approved:['Approved','#0f766e','#e7f7f2'],Reviewed:['Reviewed','#0891b2','#ecfeff'],Reserved:['Reserved','#7c3aed','#f5f0ff'],

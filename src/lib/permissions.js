@@ -2,7 +2,7 @@ const ROLE_LABELS={admin:'System Admin',operations:'Operations',finance:'Finance
 const PRIVATE_RESOURCES=['employees','attendance','payroll','payslips','payments','cashbook','journals'];
 const OPS_CREATE=['customers','suppliers','items','sales','merchandising','purchases','receipts','bom','openings','workorders','deliveries','tasks','invoices','productivity'];
 const FIN_CREATE=['employees','attendance','payroll','invoices','payments'];
-const FIN_ACTIONS=['create_invoice','post_invoice','post_supplier_bill','post_payment','review_attendance','create_payroll','review_payroll','make_payment'];
+const FIN_ACTIONS=['create_invoice','post_invoice','post_supplier_bill','post_payment','reverse_payment','review_attendance','create_payroll','review_payroll','make_payment'];
 const APPROVAL_ACTIONS=['approve_bom','approve_merchandising','approve_purchase','approve_payroll'];
 function canRead(role,resource,kind){return Boolean(ROLE_LABELS[role])&&(role!=='operations'||(!PRIVATE_RESOURCES.includes(resource)&&(resource!=='invoices'||!kind||kind==='PURCHASE')));}
 function canCreate(role,resource,kind){return role==='admin'||(role==='operations'&&OPS_CREATE.includes(resource)&&(resource!=='invoices'||!kind||kind==='PURCHASE'))||(role==='finance'&&FIN_CREATE.includes(resource));}

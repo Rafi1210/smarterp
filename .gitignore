@@ -3,6 +3,7 @@ node_modules/
 .netlify/
 .env*
 !.env.example
+.env.staging.local
 .local/
 coverage/
 *.log

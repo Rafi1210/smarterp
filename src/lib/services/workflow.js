@@ -8,7 +8,7 @@ const {move,stock,reserve,reservation}=require('./inventory.js');
 async function activity(trx,scope,id,action,description){await trx('activity_log').insert({...scope,record_id:id,actor:actorLabel(),action,description});}
 async function linked(trx,scope,from,to,relation){await trx('record_links').insert({...scope,from_id:from,to_id:to,relation}).onConflict(['from_id','to_id','relation']).ignore();}
 async function change(trx,scope,r,status,patch,action,description){await trx('records').where({...scope,id:r.id}).update({status,data:JSON.stringify({...r.data,...patch})});await activity(trx,scope,r.id,action,description);}
-async function find(trx,scope,resource,external_id){const r=await trx('records').where({...scope,resource,external_id}).first();fail(r,`${resource} '${external_id}' is absent from this company and dataset.`,404);return r;}
+async function find(trx,scope,resource,external_id){const r=await trx('records').where({...scope,resource,external_id}).first();fail(r,`${resource} '${external_id}' is absent from this company and dataset.`,404);fail(!['Deleted','Archived'].includes(r.status),`${resource} '${external_id}' is inactive. Restore the record before using it.`,409);return r;}
 async function lines(trx,r){return trx('document_lines').where({company_id:r.company_id,dataset_id:r.dataset_id,document_id:r.id}).orderBy('external_line_id');}
 async function oneLine(trx,r){const ls=await lines(trx,r);fail(ls.length===1,'This workflow posts one finished style per document. Multi-line drafts can be stored but cannot be posted.',409);return ls[0];}
 async function create(trx,scope,resource,row){return (await insertRecord(trx,scope,resource,await normalize(trx,scope,resource,[row]))).record;}
@@ -100,14 +100,14 @@ async function command(db,scope,id,action,body={},options={}){
    const summary=planSummary(livePlan);await change(trx,scope,r,'Confirmed',{material_plan:summary},action,`Current stock check: ${summary.required} g required; ${summary.shortage} g physical shortage; ${summary.to_purchase} g to purchase.`);result.plan=summary;
   }
   if(action==='create_purchase'){
-   expect('sales','Confirmed');await approvedMerch(trx,scope,r);fail(r.data.material_plan,'Run the BOM/material check first.',409);fail(!await trx('records').where({...scope,resource:'workorders'}).whereRaw("data->>'source_sales_id' = ?",[r.external_id]).whereNotIn('status',['Draft','Cancelled']).first(),'Material is already committed to a Work Order. Continue or cancel the unissued Work Order before purchasing.',409);const p=await materialPlan(trx,scope,r);
+   expect('sales','Confirmed');await approvedMerch(trx,scope,r);fail(r.data.material_plan,'Run the BOM/material check first.',409);fail(!await trx('records').where({...scope,resource:'workorders'}).whereRaw("data->>'source_sales_id' = ?",[r.external_id]).whereNotIn('status',['Draft','Cancelled','Deleted','Archived']).first(),'Material is already committed to a Work Order. Continue or cancel the unissued Work Order before purchasing.',409);const p=await materialPlan(trx,scope,r);
    fail(BigInt(p.to_purchase)>0n,'No uncovered shortage remains. Receive approved inbound stock or refresh the material check.',409);
    const supplier=await find(trx,scope,'suppliers',String(body.supplier_id||'')),qty=BigInt(p.to_purchase);
    const po=await create(trx,scope,'purchases',{external_id:await nextCode(trx,scope,'PO'),line_id:'1',date:today(),item_id:p.component.external_id,quantity:`${qty/1000n}.${String(qty%1000n).padStart(3,'0')}`,rate:String(body.rate||''),supplier_id:supplier.external_id,source_sales_id:r.external_id});
    await change(trx,scope,r,r.status,{purchase_id:po.id},action,'Uncovered fabric shortage converted to a linked purchase Draft.');result.record_id=po.id;
   }
   if(action==='approve_purchase'){
-   expect('purchases','Draft');const so=await find(trx,scope,'sales',r.data.source_sales_id);fail(so.status==='Confirmed','Purchase approval requires a confirmed Sales Order.',409);await approvedMerch(trx,scope,so);fail(!await trx('records').where({...scope,resource:'workorders'}).whereRaw("data->>'source_sales_id' = ?",[so.external_id]).whereNotIn('status',['Draft','Cancelled']).first(),'Material is already committed to a Work Order; additional purchase approval is blocked.',409);
+   expect('purchases','Draft');const so=await find(trx,scope,'sales',r.data.source_sales_id);fail(so.status==='Confirmed','Purchase approval requires a confirmed Sales Order.',409);await approvedMerch(trx,scope,so);fail(!await trx('records').where({...scope,resource:'workorders'}).whereRaw("data->>'source_sales_id' = ?",[so.external_id]).whereNotIn('status',['Draft','Cancelled','Deleted','Archived']).first(),'Material is already committed to a Work Order; additional purchase approval is blocked.',409);
    const p=await materialPlan(trx,scope,so),l=await oneLine(trx,r);fail(l.item_id===p.component.id&&BigInt(l.quantity)<=BigInt(p.to_purchase),'PO material/quantity exceeds the uncovered BOM shortage after approved inbound stock.',409);
    await change(trx,scope,r,'Approved',{},action,'Purchase approved. Inbound quantity is visible; physical stock is unchanged.');
   }
@@ -133,7 +133,7 @@ async function command(db,scope,id,action,body={},options={}){
   }
   if(action==='create_workorder'){
    expect('sales','Confirmed');const merch=await approvedMerch(trx,scope,r);fail(r.data.material_plan,'Run material planning first.',409);const p=await materialPlan(trx,scope,r);
-   const previous=await trx('records').where({...scope,resource:'workorders'}).whereRaw("data->>'source_sales_id' = ?",[r.external_id]).whereNot('status','Cancelled').first();fail(!previous,'A Work Order already exists. Open it from the order journey.',409);
+   const previous=await trx('records').where({...scope,resource:'workorders'}).whereRaw("data->>'source_sales_id' = ?",[r.external_id]).whereNotIn('status',['Cancelled','Deleted','Archived']).first();fail(!previous,'A Work Order already exists. Open it from the order journey.',409);
    const wo=await create(trx,scope,'workorders',{external_id:await nextCode(trx,scope,'WO'),source_sales_id:r.external_id,bom_id:p.bom.external_id,quantity:p.quantity,date:today()});
    await reserve(trx,scope,wo,r,p,eventID);await linked(trx,scope,wo.id,merch.id,'merchandising');await change(trx,scope,wo,'Reserved',{reserved_grams:p.required},action,'Fabric reserved for this Work Order. Physical stock is unchanged.');
    await change(trx,scope,r,r.status,{work_order_id:wo.id},action,'Linked Work Order created and material reserved atomically.');result.record_id=wo.id;
@@ -152,7 +152,7 @@ async function command(db,scope,id,action,body={},options={}){
    expect('workorders','Reserved');const so=await find(trx,scope,'sales',r.data.source_sales_id);fail(so.status==='Confirmed','Production requires a confirmed Sales Order.',409);await approvedMerch(trx,scope,so);
    const p=await materialPlan(trx,scope,so,r.id),allocation=await reservation(trx,scope,r);
    fail(p.bom.external_id===r.data.bom_id&&BigInt(p.quantity)===BigInt(r.data.quantity)&&allocation&&BigInt(allocation.quantity)===BigInt(p.required),'Work Order quantity, approved BOM and active reservation must match.',409);
-   const pos=await trx('records').where({...scope,resource:'purchases'}).whereRaw("data->>'source_sales_id' = ?",[so.external_id]);
+   const pos=await trx('records').where({...scope,resource:'purchases'}).whereNotIn('status',['Deleted','Archived','Cancelled']).whereRaw("data->>'source_sales_id' = ?",[so.external_id]);
    for(const po of pos){fail(po.status==='Received','Receive all linked purchase orders first.',409);const bill=await trx('records').where({...scope,resource:'invoices'}).whereIn('status',['Matched','Posted','PartPaid','Paid']).whereRaw("data->>'kind' = 'PURCHASE' AND data->>'source_id' = ?",[po.external_id]).first();fail(bill,'Match the linked supplier bill before material issue.',409);}
    await move(trx,scope,r,p.component,eventID,'MATERIAL_ISSUE',-BigInt(p.required),0n,-BigInt(p.required));await trx('inventory_reservations').where({...scope,id:allocation.id}).update({status:'Consumed'});
    await change(trx,scope,r,'MaterialsIssued',{consumed_grams:p.required,finished_item_id:p.item.external_id},action,'Reserved fabric issued atomically; physical and reserved balances reduced together.');
@@ -173,9 +173,9 @@ async function command(db,scope,id,action,body={},options={}){
  });
 }
 async function overview(db,scope,filters={}){
- const counts=await require('../resource-access.js').restrictRecords(db('records').where(scope)).select('resource').count('* as count').groupBy('resource');
+ const counts=await require('../resource-access.js').restrictRecords(db('records').where(scope).whereNotIn('status',['Deleted','Archived'])).select('resource').count('* as count').groupBy('resource');
  const stockRows=scope.dataset_id===DEMO?await db('inventory_balances as b').join('records as i','i.id','b.item_id').where({'b.company_id':scope.company_id,'b.dataset_id':scope.dataset_id}).select('i.id','i.external_id','i.name','i.data','b.physical','b.held','b.reserved'):[];
- const stages=scope.dataset_id===DEMO?await db('records').where(scope).whereIn('resource',['sales','merchandising','purchases','workorders','deliveries']).select('resource','status').count('* as count').groupBy('resource','status'):[];
+ const stages=scope.dataset_id===DEMO?await db('records').where(scope).whereNotIn('status',['Deleted','Archived']).whereIn('resource',['sales','merchandising','purchases','workorders','deliveries']).select('resource','status').count('* as count').groupBy('resource','status'):[];
  return {counts:counts.map(r=>({...r,count:Number(r.count)})),stages:stages.map(r=>({...r,count:Number(r.count)})),stock:stockRows,scope:scope.dataset_id,finance_available:scope.dataset_id===DEMO&&require('../resource-access.js').readAllowed('payments'),finance:scope.dataset_id===DEMO&&require('../resource-access.js').readAllowed('payments')?await require('./finance.js').snapshot(db,scope,filters):null};
 }
 module.exports={command,prepareDemo,materialPlan,overview,activity,linked,change,find,create,approvedMerch};

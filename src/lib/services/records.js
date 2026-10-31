@@ -26,18 +26,39 @@ async function insertRecord(trx, scope, resource, normalized, actor = actorLabel
 function filtered(db, scope, resource, filters = {}) {
   getResource(resource,scope.dataset_id);
   let q = restrictRecords(db('records').where({ ...scope, resource }),resource);
+  const lifecycle=filters.lifecycle||(['Archived','Deleted'].includes(filters.status)?filters.status.toLowerCase():'active');
+  fail(['active','archived','deleted','all'].includes(lifecycle),'Unknown record visibility.');
+  if(lifecycle==='active')q=q.whereNotIn('status',['Archived','Deleted']);
+  else if(lifecycle!=='all')q=q.where('status',lifecycle==='archived'?'Archived':'Deleted');
   if (filters.search) {
     fail(String(filters.search).length <= 120,'Search is too long.');
     const pattern = `%${String(filters.search).replace(/[\\%_]/g, c => `\\${c}`)}%`;
-    q = q.where(w => w.whereILike('name',pattern).orWhereILike('external_id',pattern));
+    q = q.where(w => {w.whereILike('name',pattern).orWhereILike('external_id',pattern);if(resource==='customers')w.orWhereRaw("COALESCE(data->>'email','') ILIKE ?",[pattern]).orWhereRaw("COALESCE(data->>'registration_no','') ILIKE ?",[pattern]);});
   }
   if(filters.group){fail(String(filters.group).length<=200,'Chart group is too long.');let expr='status';if(['customers','suppliers'].includes(resource))expr="COALESCE(NULLIF(data->>'country',''),'Unspecified')";else if(resource==='employees')expr="COALESCE(NULLIF(data->>'department',''),'Unspecified')";else if(resource==='items')expr="COALESCE(data->>'uom','source unit')";else if(['invoices','movements','journals'].includes(resource))expr="data->>'kind'";if(resource==='payslips')expr="data->>'period'";q=q.whereRaw(`${expr} = ?`,[String(filters.group)]);}
   if(filters.overdue){fail(resource==='tasks'&&filters.overdue==='1','Overdue filtering is for planning tasks.');q=q.whereNotIn('status',['Done','Cancelled']).where('business_date','<',today());}
   if(filters.order){fail(resource==='tasks'&&String(filters.order).length<=80,'Order filtering is available for planning tasks only.');q=q.whereRaw("data->>'source_sales_id' = ?",[String(filters.order)]);}
   if(filters.kind) { fail(['SALES','PURCHASE'].includes(filters.kind),'Unknown invoice kind.'); q=q.whereRaw("data->>'kind' = ?",[filters.kind]); }
-  if (filters.status && filters.status !== 'all') q = q.where('status',String(filters.status));
-  if (filters.from) q = q.where('business_date','>=',date(filters.from));
-  if (filters.to) q = q.where('business_date','<=',date(filters.to));
+  if(filters.status==='ConfirmedOrDelivered'){fail(resource==='sales','This stage group is for sales documents.');q=q.whereIn('status',['Confirmed','Delivered']);}
+  else if (filters.status && filters.status !== 'all') q = q.where('status',String(filters.status));
+  const orderDates=filters.date_basis==='order';fail(!filters.date_basis||['document','order'].includes(filters.date_basis),'Unknown date basis.');
+  if(filters.buyer||orderDates){
+    const code=String(filters.buyer||'').trim();fail(code.length<=80,'Buyer code is too long.');
+    const buyer=code?db('records').where({...scope,resource:'customers',external_id:code}).select('id'):null;
+    const orders=()=>{let query=db('records').where({...scope,resource:'sales'}).whereNotIn('status',['Deleted','Archived']);if(code)query=query.whereRaw("data->>'customer_id' = ?",[code]).whereExists(buyer);if(orderDates&&filters.from)query=query.where('business_date','>=',date(filters.from));if(orderDates&&filters.to)query=query.where('business_date','<=',date(filters.to));return query.select('external_id');};
+    const purchases=()=>db('records').where({...scope,resource:'purchases'}).whereIn(db.raw("data->>'source_sales_id'"),orders()).select('external_id');
+    const workorders=()=>db('records').where({...scope,resource:'workorders'}).whereIn(db.raw("data->>'source_sales_id'"),orders()).select('external_id');
+    const invoices=()=>db('records').where({...scope,resource:'invoices'}).where(w=>w.where(x=>x.whereRaw("data->>'kind'='SALES'").whereIn(db.raw("data->>'source_id'"),orders())).orWhere(x=>x.whereRaw("data->>'kind'='PURCHASE'").whereIn(db.raw("data->>'source_id'"),purchases()))).select('external_id');
+    if(resource==='sales'){if(code)q=q.whereRaw("data->>'customer_id' = ?",[code]).whereExists(buyer);}
+    else if(['merchandising','purchases','workorders','tasks'].includes(resource))q=q.whereIn(db.raw("data->>'source_sales_id'"),orders());
+    else if(resource==='receipts')q=q.whereIn(db.raw("data->>'purchase_id'"),purchases());
+    else if(resource==='deliveries')q=q.whereIn(db.raw("data->>'workorder_id'"),workorders());
+    else if(resource==='invoices')q=q.whereIn('external_id',invoices());
+    else if(resource==='payments')q=q.whereIn(db.raw("data->>'target_id'"),invoices());
+    else if(resource==='customers'&&!orderDates)q=q.where('external_id',code);
+    else fail(false,'Buyer/order-date filtering is unavailable for this resource.');
+  }
+  if (!orderDates||resource==='sales') {if(filters.from)q=q.where('business_date','>=',date(filters.from));if(filters.to)q=q.where('business_date','<=',date(filters.to));}
   if (filters.from && filters.to) fail(filters.from <= filters.to,'Date range is reversed.');
   return q;
 }
@@ -80,10 +101,11 @@ async function detail(db,scope,resource,id) {
   const reviews=scope.dataset_id==='smarterp-demo'?await db('approval_requests as a').leftJoin('approval_decisions as d','d.request_id','a.id').where({'a.company_id':scope.company_id,'a.dataset_id':scope.dataset_id,'a.document_id':id}).select('a.id','a.external_id','a.status','a.submit_note','a.created_at','a.decided_at','a.submitted_by','d.reason').orderBy('a.created_at','desc').limit(25):[];
   const planning=scope.dataset_id==='smarterp-demo'&&['tasks','sales'].includes(resource)?await require('./planning.js').detailPlanning(db,scope,record):null;
   const result={ ...record, reviews, planning, lines, related, activity, balance, movements,finance_balance,finance_lines,reservation,journey,material,material_error };
+  result.lifecycle=scope.dataset_id==='smarterp-demo'?await require('./lifecycle.js').describe(db,scope,record):null;
   result.presentation=scope.dataset_id==='smarterp-demo'?await require('./documents.js').presentDocument(db,scope,result):null;
   return result;
 }
-async function createDraft(db,scope,resource,rows,requestKey) {
+async function createDraft(db,scope,resource,rows,requestKey,options={}) {
   assertCreate(resource,rows?.[0]?.kind);
   fail(scope.dataset_id === 'smarterp-demo','Historical records are added through source-specific imports, not operational forms.');
   return db.transaction(async trx=>{
@@ -102,7 +124,10 @@ async function createDraft(db,scope,resource,rows,requestKey) {
       const external_id=await nextCode(trx,scope,prefixFor(resource,rows[0]),rows[0].date||undefined);rows=rows.map(r=>({...r,external_id}));
     }
     const normalized=await normalize(trx,scope,resource,rows);assertCreate(resource,normalized.data?.kind);
+    const existing=await trx('records').where({...scope,resource,external_id:normalized.external_id}).select('id').first();
+    const acknowledgement=resource==='customers'&&!existing?await require('./buyers.js').guardDuplicate(trx,scope,normalized,options.duplicate_ack):null;
     const result=await insertRecord(trx,scope,resource,normalized);
+    if(acknowledgement)await trx('activity_log').insert({...scope,record_id:result.record.id,actor:actorLabel(),action:'DUPLICATE_REVIEWED',description:'Separate buyer confirmed. '+acknowledgement.reason+' Similar codes: '+acknowledgement.matches.join(', ')});
     if(event)await trx('posting_events').where({id:event.id}).update({result:JSON.stringify({...event.result,record_id:result.record.id})});
     return result;
   });

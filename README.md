@@ -2,7 +2,7 @@
 
 A modular garment-operations application connecting a buyer order, Merchandising review, material planning, purchasing, inventory reservations, manufacturing/QC, delivery, Finance and payroll. Business documents remain linked; critical writes use transactions, source-event idempotency, status guards, scoped references and activity history.
 
-Current delivery guide: [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md). It prepares a private GitHub repository, CI and explicit Netlify/Neon staging setup. No public deployment, remote push or production promotion is claimed yet.
+Current update guide: [USABILITY_SETUP_BANGLA.md](USABILITY_SETUP_BANGLA.md). The prior application is on the public staging branch at `ceb38088e6de26814c00a1125e223950f43f9b8d`; the new record-management/analytics changes are prepared locally and have not been deployed or promoted. [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md) remains the initial setup reference.
 
 ## Application
 
@@ -14,6 +14,8 @@ Current delivery guide: [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md). It p
 - Independent review inbox and T&A milestones with prerequisites, baseline dates, rescheduling and overdue views. Calendar completion does not post stock or money.
 - CSV mapping, whole-file validation, preview, resumable bounded commits, document atomicity, filtering, related records and CSV/template/error downloads. Upload limit: 2 MB / 5,000 rows. Operational transaction imports create Draft records, never postings.
 - Organised invoice/bill/delivery/payment/payslip views and browser Print / Save PDF.
+- Safe Draft soft delete/restore, master archive/restore, guarded unposted cancellation and immutable customer/supplier/salary payment reversal vouchers. Work Orders use their existing reservation-aware cancellation; posted stock/invoice reversal remains outside scope.
+- Buyer duplicate warnings with explicit reviewed override, searchable saved-reference selection, and a light pastel theme. Saved-data analytics add buyer/date/stage scopes, record drill-down, stock/production/T&A panels, role-protected AR aging/cash charts and aggregate CSV downloads.
 - On-demand Bengali Management Brief from backend-computed aggregate facts and links. Native Responses API call, strict JSON, 15-second timeout, no automatic retry, no tools/SQL/mutation access and an honest rules-based fallback. Key remains server-side.
 
 Three fixed functional accounts: System Admin, Operations and Finance. APIs enforce the same permissions as navigation. Submitters cannot approve their own submitted review requests. These are functional accounts, not individual enterprise identities.
@@ -54,13 +56,13 @@ npm run build
 npm run test:http
 ```
 
-The current integration command contains the 57 business/identity cases plus an isolated read-only deployment-preflight case. CI uses Node 24, `npm ci`, pinned official GitHub actions and disposable synthetic DB fixtures without cloud credentials. The workflow must run on the actual GitHub repo before hosted CI can be reported as passed.
+The current integration command contains 67 cases, including nine new usability/correction cases. CI uses Node 24, `npm ci`, pinned official GitHub actions and disposable synthetic DB fixtures without cloud credentials. The new source still needs its own hosted CI/deploy run after push; the base branch's earlier green run does not validate this update.
 
 [docs/VERIFICATION.md](docs/VERIFICATION.md) records what was actually run and its limits. [SECURITY.md](SECURITY.md) describes controls, heuristic scan boundaries and remaining real-data gates.
 
 ## Hosted staging and release
 
-Follow [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md). Start with a private GitHub staging branch and a dedicated Netlify staging project. Use a new staging database, a git-ignored .env.staging.local profile and explicit migrate/seed/account commands. Local .env.local never becomes the cloud profile.
+For the existing staging app, follow [USABILITY_SETUP_BANGLA.md](USABILITY_SETUP_BANGLA.md): apply sources, explicitly migrate the staging profile, pass preflight, then push staging. Do not reseed/reset accounts. [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md) applies to first-time initialization. Local .env.local never becomes the cloud profile.
 
 Netlify application variables must be set in its UI for runtime access. Verified builds bundle non-secret branch/environment/commit metadata; previews and unrelated branches stop before DB use. `build:deploy` validates readiness and builds code without migration, seed, password reset or AI allowance reset. Health and authenticated smoke evidence identify the actual deployed commit. Promote only a live-tested staging commit to main, then initialise a separate empty production DB/project explicitly.
 

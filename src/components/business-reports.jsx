@@ -1,4 +1,5 @@
 'use client';
+import {useUrlState} from '@/lib/use-workspace-url';
 import {ReportTooltip as Tooltip,ChartUnitNote} from './chart-kit';
 import {compact as compactAmount,monthLabel,dateLabel,PALETTE} from '@/lib/chart-format';
 import {useEffect,useState} from 'react';
@@ -18,10 +19,10 @@ function Metric({title,value,note,index,Icon=Receipt}){return <div className={'c
 export default function BusinessReports({mode='sales',role,revision,onRecord,onSelect,onMode}){
  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Dhaka',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const initial={from:mode==='sales'?dateBack(today,89):'',to:today,buyer:'',search:'',state:'',segment:'all',sort:'overdue_first',page:1,size:20,band:'',order_page:1};
- const [filters,setFilters]=useState(initial),[data,setData]=useState(null),[error,setError]=useState(''),[reload,setReload]=useState(0);
+ const [filters,setFilters]=useUrlState(initial),[data,setData]=useState(null),[error,setError]=useState(''),[reload,setReload]=useState(0);
  const query=new URLSearchParams({dataset:DEMO,type:mode,...filters}).toString();
  useEffect(()=>{const abort=new AbortController();setData(null);setError('');if(!filters.to||mode==='sales'&&!filters.from){setError('Choose the required report dates.');return()=>abort.abort();}const timer=setTimeout(async()=>{try{const r=await fetch('/api/business-reports?'+query,{signal:abort.signal,cache:'no-store'}),d=await r.json();if(!r.ok)throw Error(d.error);setData(d);}catch(e){if(e.name!=='AbortError')setError(e.message);}},180);return()=>{clearTimeout(timer);abort.abort();};},[query,revision,reload]);
- const change=(key,value)=>setFilters(f=>({...f,[key]:value,...(!['page','order_page'].includes(key)?{page:1,order_page:1}:{})}));
+ const change=(key,value)=>setFilters(f=>({...f,[key]:value,...(!['page','order_page'].includes(key)?{page:1,order_page:1}:{})}),{replace:key==='search'});
  const scopeChange=(key,value)=>setFilters(f=>({...f,[key]:value,page:1,order_page:1,band:''}));
  function openOrders(row){const period=row?.state==='Inactive'?data.previous:data.filters;onSelect('Sales / CRM','sales','',DEMO,'list',{from:period.from,to:period.to,buyer:row?.buyer_code||filters.buyer,status:'ConfirmedOrDelivered'});}
  const summary=data?.summary,trend=data?.trend?.map(r=>({...r,value:Number(r.value_minor)/100})),pareto=data?.pareto?.map(r=>({...r,value:Number(r.value_minor)/100,cumulative:(r.cumulative_basis_points||0)/100}));

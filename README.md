@@ -1,38 +1,111 @@
 # SmartERP
 
-A modular garment-operations application connecting a buyer order, Merchandising review, material planning, purchasing, inventory reservations, manufacturing/QC, delivery, Finance and payroll. Business documents remain linked; critical writes use transactions, source-event idempotency, status guards, scoped references and activity history.
+### Connected garment operations, from buyer inquiry to payment.
 
-Current update guide: [BUSINESS_REPORTS_SETUP_BANGLA.md](BUSINESS_REPORTS_SETUP_BANGLA.md). This read-only business-analysis/CSV-pack update starts from the actual public staging source `2dcec05fe6ef5935943b8cc9705cbc6232843f2f`. Its new changes have not been pushed, deployed or promoted. [USABILITY_SETUP_BANGLA.md](USABILITY_SETUP_BANGLA.md) documents the previous update; [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md) remains the initial setup reference.
+[![Checks](https://github.com/Rafi1210/smarterp/actions/workflows/ci.yml/badge.svg)](https://github.com/Rafi1210/smarterp/actions/workflows/ci.yml)
+![Node.js](https://img.shields.io/badge/Node.js-24-5fa04e?logo=nodedotjs&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-f7df1e?logo=javascript&logoColor=222222)
 
-## Application
+**[Live app](https://demo-smarterp.netlify.app/login)** · **[Workflow](#workflow)** · **[Architecture](#architecture)** · **[Setup](#run-locally)** · **[Scope](#current-scope)**
 
-- Apps Home, Overview, scoped Global Search, saved workflow counts and document workspaces with Summary / Related documents / Activity history.
-- Sales inquiry/quotation/order, approved Merchandising handover, BOM material checks and shortage purchases.
-- PO approval, accepted GRN, supplier-bill matching, fabric reservations and issue, QC-held production, QC release and full delivery.
-- Customer invoice and supplier-bill posting, allocated receipts/payments, AR/AP, selected-event journals and saved financial reports.
-- Reviewed attendance/fixed payroll components, independent payroll approval, Finance salary settlement and paid payslips.
-- Independent review inbox and T&A milestones with prerequisites, baseline dates, rescheduling and overdue views. Calendar completion does not post stock or money.
-- CSV mapping, whole-file validation, preview, resumable bounded commits, document atomicity, filtering, related records and CSV/template/error downloads. Upload limit: 2 MB / 5,000 rows. Operational transaction imports create Draft records, never postings.
-- Organised invoice/bill/delivery/payment/payslip views and browser Print / Save PDF.
-- Safe Draft soft delete/restore, master archive/restore, guarded unposted cancellation and immutable customer/supplier/salary payment reversal vouchers. Work Orders use their existing reservation-aware cancellation; posted stock/invoice reversal remains outside scope.
-- Buyer duplicate warnings with explicit reviewed override, searchable saved-reference selection, and a light pastel theme. Saved-data analytics add buyer/date/stage scopes, record drill-down, stock/production/T&A panels, role-protected AR aging/cash charts and aggregate CSV downloads.
-- Sales & Buyer Health answers buyer dependency, repeat-order and period-change questions, with Pareto, share, histogram and buyer/month patterns. Collection Priority uses actual posted balances and contractual due dates for aging, invoice scatter and a paginated follow-up queue. Rules-based observations are read-only; no AI call or automated buyer contact occurs.
-- An authored synthetic, manifest-verified 11-CSV/66-row training pack imports through the existing mapping/preview pipeline. One focus order supports the complete garment-to-payment/payroll flow; 48 optional inquiries remain Draft until explicitly quoted/confirmed. No startup/build/deployment imports or posts the pack.
-- On-demand Bengali Management Brief from backend-computed aggregate facts and links. Native Responses API call, strict JSON, 15-second timeout, no automatic retry, no tools/SQL/mutation access and an honest rules-based fallback. Key remains server-side.
+SmartERP is a modular Enterprise Resource Planning application connecting sales, merchandising, purchasing, inventory, manufacturing, finance and payroll through traceable documents.
 
-Three fixed functional accounts: System Admin, Operations and Finance. APIs enforce the same permissions as navigation. Submitters cannot approve their own submitted review requests. These are functional accounts, not individual enterprise identities.
+**The case study:** replace disconnected registers with a workflow that answers *what is blocked, who acts next, and which document needs attention*. The hosted app uses synthetic data and requires an account; credentials are not published.
 
-## Stack
+![SmartERP overview: saved order metrics, receivables and selected-event cash movement](docs/screenshots/overview.png)
 
-Node 24; Next.js App Router; authored JavaScript/JSX; React; Tailwind; shadcn/ui JavaScript components; Knex + pg; Neon PostgreSQL target; local persistent PGlite PostgreSQL engine; Papa Parse; Zod; Recharts; native fetch. Exact dependencies are committed in package-lock.json. Release preparation introduces no new package dependency.
+## Business value
 
-## Local development
+| Capability | Business question |
+| --- | --- |
+| **Order Control** | Which orders need attention, what is blocking them, and who acts next? |
+| **Linked documents** | How does an order connect to its materials, delivery, invoice and payments? |
+| **Sales & Buyer Health** | Which buyers dominate the order book, return, decline or stop ordering? |
+| **Collection Priority** | Which posted balances need follow-up, using actual due dates? |
+| **Import Center** | Can spreadsheets be validated and resumed without duplicate records or accidental postings? |
 
-For an already running project, preserve .env.local and .local-db. Apply the current standalone updater and follow the delivery guide; do not reset/reseed a working DB.
+## Workflow
 
-For a fresh checkout only: run `npm ci`, copy .env.example to .env.local and set APP_ENV=development, APP_MODE=demo, APP_URL=http://localhost:3000. If using the bundled local engine, set both DATABASE_URL and DATABASE_DIRECT_URL to `postgresql://postgres:postgres@127.0.0.1:5439/postgres`.
+| Role | Responsibilities |
+| --- | --- |
+| **Operations** | Inquiry → quotation → sales order → merchandising → material check → purchase order → accepted goods receipt → matched supplier bill → reserved work order → material issue → production → Quality Control (QC) release → delivery. |
+| **System Admin** | Independently reviews Bills of Material (BOM), merchandising, purchase orders and payroll. Submitters cannot approve their own requests. |
+| **Finance** | Posts bills/invoices and allocates payments/receipts. Reviews attendance and fixed salary components, submits payroll for approval, then settles salary and generates paid payslips. |
 
-Keep `npm run db:local` running in a separate terminal. Its persistent files live in .local-db; it is a PostgreSQL engine through a local pg socket, not a Neon deployment. Then explicitly run:
+Document workspaces include related records, guarded actions and activity history. Forty page routes preserve filters and document links across refresh and browser history. A Time and Action (T&A) calendar tracks milestones and dependencies; milestone completion does not post stock or money.
+
+## Product views
+
+<details>
+<summary><strong>Order Control — blockers, responsible roles and next actions</strong></summary>
+
+![Order Control with source-linked next actions and responsible roles](docs/screenshots/order-control.png)
+
+</details>
+
+<details>
+<summary><strong>Business analysis — order patterns and buyer concentration</strong></summary>
+
+![Saved-data order trends, buyer concentration and order-value distribution](docs/screenshots/sales-analysis.png)
+
+Bar, line, donut, Pareto, histogram and receivables scatter views support scoped analysis, record drill-down and filtered exports. Confirmed order value is not recognized revenue.
+
+</details>
+
+<details>
+<summary><strong>Import Center — whole-file validation before saving</strong></summary>
+
+![Three-document CSV preview with zero blocking errors](docs/screenshots/import-preview.png)
+
+Comma-Separated Values (CSV) uploads support mapping, preview and error downloads, capped at 2 MB / 5,000 rows. Resumable bounded commits preserve whole-document atomicity. Identical replays are skipped; operational transactions import as Drafts, never postings.
+
+</details>
+
+*Actual browser captures from isolated local synthetic data. [Capture evidence](docs/SCREENSHOTS.md).*
+
+## Architecture
+
+```mermaid
+flowchart TD
+    UI["Browser · role-aware workspace"] --> APP["Next.js pages and API routes"]
+    APP --> SERVICES["Domain services · permissions and validation"]
+    SERVICES --> DB[("PostgreSQL · documents, stock, finance and history")]
+    SERVICES --> FACTS["Reports · computed facts and source links"]
+    FACTS --> BRIEF["Management Brief · budget and cache"]
+    BRIEF --> MODEL["OpenAI Responses API · Bengali explanation"]
+```
+
+**Stack:** Node.js 24 · Next.js App Router · JavaScript/JSX · React · Tailwind CSS · shadcn/ui · Knex + pg · Neon PostgreSQL · Papa Parse · Zod · Recharts · native fetch. [Exact lockfile](package-lock.json).
+
+**Correctness:** database transactions, unique source events, status guards and scoped references protect critical writes. Relational records persist document lines/links, stock movements, reservations, obligations, payment allocations and activity history. Money uses integer minor units; quantities retain their units. Draft deletion, master archiving and payment reversal preserve traceability.
+
+**Only AI feature:** an on-demand Bengali Management Brief explains backend-computed aggregates using `gpt-6-luna`, strict JSON, reasoning disabled and `store: false`. Controls include a USD 1 database-backed allowance, USD 0.01 reservation, 30-call daily cap, cooldown, snapshot-aware cache, 1,000-output-token cap, 15-second timeout and zero automatic retries. No raw personal/payroll/CSV data, tools, SQL or mutation access; an honest rules-based fallback remains available.
+
+## Reproducible scenario
+
+The [11-file / 66-row synthetic pack](data/business-pack/README.md) exercises imports and role handoffs. The focus order produces 10,000 T-shirts: 2,200 kg fabric required, 1,400 kg opening stock, and an 800 kg purchase.
+
+| Focus-flow check | BDT (Bangladeshi taka) |
+| --- | ---: |
+| Customer invoice / receipt | 4,500,000 / 2,000,000 |
+| Remaining Accounts Receivable (AR) | 2,500,000 |
+| Remaining Accounts Payable (AP) / salary payable | 0 / 0 |
+| Selected-event net cash movement | 1,571,000 |
+
+Cash movement is **not profit**, full garment costing, statutory accounting or an opening-balance-inclusive bank balance. Synthetic operations, Northwind history and UCI history retain separate namespaces, original dates/units, attribution and manifest byte hashes. [Source notes](data/source/README_Bangla.md).
+
+## Run locally
+
+Requires **Node.js 24**. For a fresh checkout:
+
+```bash
+npm ci
+cp .env.example .env.local
+```
+
+Set `APP_ENV=development`, `APP_MODE=demo`, `APP_URL=http://localhost:3000` and `AI_ENABLED=false`. For the bundled local engine, set both `DATABASE_URL` and `DATABASE_DIRECT_URL` to `postgresql://postgres:postgres@127.0.0.1:5439/postgres`.
+
+Run `npm run db:local` in one terminal; in another:
 
 ```bash
 npm run db:migrate
@@ -41,39 +114,27 @@ npm run auth:setup
 npm run dev
 ```
 
-Account setup prints each new password once. Store it privately; repeat setup preserves existing passwords. No ordinary startup/build/deployment creates accounts or seeds business records. Optional initial workflow and people seeds create Drafts only; posting actions require review in the app.
+New account passwords print once; store them privately. Local development uses persistent PGlite with a pg socket; hosted environments use Neon. **Existing installations keep their environment, accounts and data.** Ordinary deployments do not seed or reset them.
 
-See [ACCESS_AI_UPDATE_BANGLA.md](ACCESS_AI_UPDATE_BANGLA.md) for fixed-account permissions, password reset, optional local AI and document usage.
+## Verification and release
 
-## Repository and checks
-
-Run `npm run repo:check` before adding/pushing code, then again after staging files. It scans current/index/reachable-history plaintext and reports paths/reasons without credential values. It is heuristic; no local Git hook is silently installed. Protected local DB/env/backups/reports and downloaded updater files are ignored.
+Local routing-release checks passed **16 unit tests, 85 integration tests, 14 release-tool tests, production build and HTTP workflow checks**, plus browser navigation/import/role checks. Integrity checks cover 17 original files and 11 training CSVs. [Routing evidence](docs/ROUTING_VERIFICATION.md).
 
 ```bash
-npm run security:deps
+npm run repo:check
 npm run verify:quick
-npm run test:release
 npm run test:integration
+npm run test:release
 npm run build
 npm run test:http
 ```
 
-The current integration command contains 78 cases, including eleven business-report/dataset workflow cases. CI uses Node 24, `npm ci`, pinned official GitHub actions and disposable synthetic DB fixtures without cloud credentials. The new source still needs its own hosted CI/deploy run after push; the base branch's earlier green run does not validate this update. Quick checks verify both the 17 original source files and all 11 new CSV byte hashes.
+GitHub Actions checks `staging` and `main`; Netlify builds without automatic migration or seeding. Live-test staging before promoting to main. Production requires an isolated database and explicit initialization. [Deployment setup](RELEASE_SETUP_BANGLA.md).
 
-[docs/VERIFICATION.md](docs/VERIFICATION.md) records what was actually run and its limits. [SECURITY.md](SECURITY.md) describes controls, heuristic scan boundaries and remaining real-data gates.
+## Current scope
 
-## Hosted staging and release
+One company, one warehouse, one fabric component per order/BOM, full-quantity operational actions, and three fixed functional accounts.
 
-For the existing staging app, follow [BUSINESS_REPORTS_SETUP_BANGLA.md](BUSINESS_REPORTS_SETUP_BANGLA.md): apply sources, pass preflight, then push staging. This update introduces no migration or dependency change. Do not reseed/reset accounts. [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md) applies to first-time initialization. Local .env.local never becomes the cloud profile.
+Production work remains: variants/multi-component BOMs, partial operations, lots/rolls, returns/wastage, full costing, individual permissions/recovery, least-privilege database access, monitoring, measured load/security validation and backup-restore drills. AI allowances are not coordinated across databases. [Security scope](SECURITY.md).
 
-Netlify application variables must be set in its UI for runtime access. Verified builds bundle non-secret branch/environment/commit metadata; previews and unrelated branches stop before DB use. `build:deploy` validates readiness and builds code without migration, seed, password reset or AI allowance reset. Health and authenticated smoke evidence identify the actual deployed commit. Promote only a live-tested staging commit to main, then initialise a separate empty production DB/project explicitly.
-
-First hosted AI remains disabled. Each isolated DB has its own allowance ledger; combined local/staging/production provider spend is not coordinated. Enable a new paid context only after a shared authority or partitioned remaining USD 1 allowance has been arranged.
-
-## Data and scope
-
-Operational synthetic, Northwind historical and UCI historical datasets use separate namespaces. Original source bytes, dates, units, attribution and warnings are preserved; all 17 source files have manifest SHA-256 verification. See [data/source/README_Bangla.md](data/source/README_Bangla.md).
-
-The fixed synthetic scenario reconciles AR BDT 2,500,000, AP 0, salary payable 0 and selected-event net cash movement BDT 1,571,000. This is not profit, full garment costing, statutory accounting or an opening-balance-inclusive bank balance.
-
-Posting scope remains one company/HQ/HQ-STORE, one finished item and one fabric component per order/BOM, and full receipt/production/QC release/delivery quantities. The new training pack uses separate item/BOM codes to preserve existing demo stock. Multi-component BOM, variants, lots/rolls, partial/rejected quantities, returns, wastage, subcontracting and full costing remain future work. Individual identities, finer permissions/MFA, production DB privileges, security review, monitoring, recovery drills and broader acceptance remain real-data release gates. No enterprise certification is claimed.
+**A working workflow application and portfolio case study; not an enterprise-certified ERP or real-data production release.**

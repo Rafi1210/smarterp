@@ -1,4 +1,5 @@
 'use client';
+import {useUrlState} from '@/lib/use-workspace-url';
 import {useEffect,useState} from 'react';
 import {authFetch as fetch} from '@/lib/client-api';
 import {Route,ArrowUpRight,ArrowRight,RefreshCw,Download,Search,SlidersHorizontal,AlertTriangle,Clock3,CheckCheck,PackageCheck,ChevronDown,ClipboardCheck,ShieldCheck} from 'lucide-react';
@@ -12,10 +13,10 @@ const kg=n=>(Number(n||0)/1000).toLocaleString('en-IN',{maximumFractionDigits:3}
 const day=value=>value?new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'}).format(new Date(value+'T00:00:00Z')):'Not set';
 const flags={review:'Review pending',review_needed:'Review needed',late:'Late delivery target',shortage:'Material shortage',quality:'Quality held',incoming:'Awaiting goods',bill_match:'Bill matching',data_review:'Check source',missing_recipe:'Recipe needed',missing_handover:'Handover needed',milestone_overdue:'Milestone overdue',collection_overdue:'Receipt overdue'};
 export default function OrderControl({revision,role,onRecord,onReviews}){
- const [filters,setFilters]=useState(INITIAL),[data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState(''),[reload,setReload]=useState(0),[advanced,setAdvanced]=useState(false);
+ const [filters,setFilters]=useUrlState(INITIAL),[data,setData]=useState(null),[busy,setBusy]=useState(true),[error,setError]=useState(''),[reload,setReload]=useState(0),[advanced,setAdvanced]=useState(false);
  const query=new URLSearchParams({dataset:'smarterp-demo',...filters}).toString();
  useEffect(()=>{const abort=new AbortController();setBusy(true);setError('');const timer=setTimeout(async()=>{try{const r=await fetch('/api/order-control?'+query,{signal:abort.signal,cache:'no-store'}),body=await r.json();if(!r.ok)throw Error(body.error);if(!abort.signal.aborted)setData(body);}catch(e){if(e.name!=='AbortError'){setError(e.message);setData(null);}}finally{if(!abort.signal.aborted)setBusy(false);}},180);return()=>{clearTimeout(timer);abort.abort();};},[query,revision,reload]);
- const change=(key,value)=>setFilters(f=>({...f,[key]:value,page:key==='page'?value:1}));
+ const change=(key,value)=>setFilters(f=>({...f,[key]:value,page:key==='page'?value:1}),{replace:key==='search'});
  const summary=data?.summary;
  const cards=[['In this order cohort',summary?.orders,Route,'blue','all'],['Need attention',summary?.attention,AlertTriangle,'rose','attention'],['Awaiting review',summary?.awaiting_review,CheckCheck,'peach','review'],['Late delivery targets',summary?.late_delivery,Clock3,'violet','late']];
  return <div className="order-control" aria-busy={busy}>

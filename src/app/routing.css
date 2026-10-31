@@ -1,0 +1,6 @@
+/* Real links keep the established sidebar appearance and keyboard focus states. */
+.shell aside nav>a{display:flex;align-items:center;gap:10px;width:100%;padding:11px 10px;border:1px solid transparent;border-radius:10px;text-align:left;font-size:12px;font-weight:550;color:#63768a;line-height:normal}
+.shell aside nav>a:hover{background:#ffffff80;color:#304c5d}.shell aside nav>a.active{color:#385f57;background:linear-gradient(115deg,#ffffffdc,#e0f0e9cc);border-color:#cfe2d9;box-shadow:0 3px 10px #8ca89e0c}
+.shell .submenu>a{display:block;text-align:left;font-size:11px;line-height:1.5;padding:9px 7px;border-radius:7px;color:#7b899d}.shell .submenu>a:hover{color:#425c73;background:#ffffff70}.shell .submenu>a.selected{color:#4f7182;background:#ffffffb5}
+.route-content-anchor,.workspace-route-anchor{display:block;height:0;overflow:hidden}.route-content-anchor:has(.not-found-page){height:auto;overflow:visible}
+@media(max-width:850px){.shell>aside>nav>a{font-size:12px;padding:10px}.shell .submenu>a{font-size:12px;padding:10px}.shell>aside>nav>a svg{flex-shrink:0}}

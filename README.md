@@ -2,7 +2,7 @@
 
 A modular garment-operations application connecting a buyer order, Merchandising review, material planning, purchasing, inventory reservations, manufacturing/QC, delivery, Finance and payroll. Business documents remain linked; critical writes use transactions, source-event idempotency, status guards, scoped references and activity history.
 
-Current update guide: [USABILITY_SETUP_BANGLA.md](USABILITY_SETUP_BANGLA.md). The prior application is on the public staging branch at `ceb38088e6de26814c00a1125e223950f43f9b8d`; the new record-management/analytics changes are prepared locally and have not been deployed or promoted. [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md) remains the initial setup reference.
+Current update guide: [BUSINESS_REPORTS_SETUP_BANGLA.md](BUSINESS_REPORTS_SETUP_BANGLA.md). This read-only business-analysis/CSV-pack update starts from the actual public staging source `2dcec05fe6ef5935943b8cc9705cbc6232843f2f`. Its new changes have not been pushed, deployed or promoted. [USABILITY_SETUP_BANGLA.md](USABILITY_SETUP_BANGLA.md) documents the previous update; [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md) remains the initial setup reference.
 
 ## Application
 
@@ -16,6 +16,8 @@ Current update guide: [USABILITY_SETUP_BANGLA.md](USABILITY_SETUP_BANGLA.md). Th
 - Organised invoice/bill/delivery/payment/payslip views and browser Print / Save PDF.
 - Safe Draft soft delete/restore, master archive/restore, guarded unposted cancellation and immutable customer/supplier/salary payment reversal vouchers. Work Orders use their existing reservation-aware cancellation; posted stock/invoice reversal remains outside scope.
 - Buyer duplicate warnings with explicit reviewed override, searchable saved-reference selection, and a light pastel theme. Saved-data analytics add buyer/date/stage scopes, record drill-down, stock/production/T&A panels, role-protected AR aging/cash charts and aggregate CSV downloads.
+- Sales & Buyer Health answers buyer dependency, repeat-order and period-change questions, with Pareto, share, histogram and buyer/month patterns. Collection Priority uses actual posted balances and contractual due dates for aging, invoice scatter and a paginated follow-up queue. Rules-based observations are read-only; no AI call or automated buyer contact occurs.
+- An authored synthetic, manifest-verified 11-CSV/66-row training pack imports through the existing mapping/preview pipeline. One focus order supports the complete garment-to-payment/payroll flow; 48 optional inquiries remain Draft until explicitly quoted/confirmed. No startup/build/deployment imports or posts the pack.
 - On-demand Bengali Management Brief from backend-computed aggregate facts and links. Native Responses API call, strict JSON, 15-second timeout, no automatic retry, no tools/SQL/mutation access and an honest rules-based fallback. Key remains server-side.
 
 Three fixed functional accounts: System Admin, Operations and Finance. APIs enforce the same permissions as navigation. Submitters cannot approve their own submitted review requests. These are functional accounts, not individual enterprise identities.
@@ -56,13 +58,13 @@ npm run build
 npm run test:http
 ```
 
-The current integration command contains 67 cases, including nine new usability/correction cases. CI uses Node 24, `npm ci`, pinned official GitHub actions and disposable synthetic DB fixtures without cloud credentials. The new source still needs its own hosted CI/deploy run after push; the base branch's earlier green run does not validate this update.
+The current integration command contains 78 cases, including eleven business-report/dataset workflow cases. CI uses Node 24, `npm ci`, pinned official GitHub actions and disposable synthetic DB fixtures without cloud credentials. The new source still needs its own hosted CI/deploy run after push; the base branch's earlier green run does not validate this update. Quick checks verify both the 17 original source files and all 11 new CSV byte hashes.
 
 [docs/VERIFICATION.md](docs/VERIFICATION.md) records what was actually run and its limits. [SECURITY.md](SECURITY.md) describes controls, heuristic scan boundaries and remaining real-data gates.
 
 ## Hosted staging and release
 
-For the existing staging app, follow [USABILITY_SETUP_BANGLA.md](USABILITY_SETUP_BANGLA.md): apply sources, explicitly migrate the staging profile, pass preflight, then push staging. Do not reseed/reset accounts. [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md) applies to first-time initialization. Local .env.local never becomes the cloud profile.
+For the existing staging app, follow [BUSINESS_REPORTS_SETUP_BANGLA.md](BUSINESS_REPORTS_SETUP_BANGLA.md): apply sources, pass preflight, then push staging. This update introduces no migration or dependency change. Do not reseed/reset accounts. [RELEASE_SETUP_BANGLA.md](RELEASE_SETUP_BANGLA.md) applies to first-time initialization. Local .env.local never becomes the cloud profile.
 
 Netlify application variables must be set in its UI for runtime access. Verified builds bundle non-secret branch/environment/commit metadata; previews and unrelated branches stop before DB use. `build:deploy` validates readiness and builds code without migration, seed, password reset or AI allowance reset. Health and authenticated smoke evidence identify the actual deployed commit. Promote only a live-tested staging commit to main, then initialise a separate empty production DB/project explicitly.
 
@@ -74,4 +76,4 @@ Operational synthetic, Northwind historical and UCI historical datasets use sepa
 
 The fixed synthetic scenario reconciles AR BDT 2,500,000, AP 0, salary payable 0 and selected-event net cash movement BDT 1,571,000. This is not profit, full garment costing, statutory accounting or an opening-balance-inclusive bank balance.
 
-Posting scope remains one company/HQ/HQ-STORE, one finished style/fabric BOM and full receipt/production/QC release/delivery quantities. Multi-component BOM, variants, lots/rolls, partial/rejected quantities, returns, wastage, subcontracting and full costing remain future work. Individual identities, finer permissions/MFA, production DB privileges, security review, monitoring, recovery drills and broader acceptance remain real-data release gates. No enterprise certification is claimed.
+Posting scope remains one company/HQ/HQ-STORE, one finished item and one fabric component per order/BOM, and full receipt/production/QC release/delivery quantities. The new training pack uses separate item/BOM codes to preserve existing demo stock. Multi-component BOM, variants, lots/rolls, partial/rejected quantities, returns, wastage, subcontracting and full costing remain future work. Individual identities, finer permissions/MFA, production DB privileges, security review, monitoring, recovery drills and broader acceptance remain real-data release gates. No enterprise certification is claimed.

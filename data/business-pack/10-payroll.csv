@@ -1,0 +1,2 @@
+external_id,employee_id,period,basic,allowance,extra,deduction,attendance_days,attendance_id
+PAY-BA26-001,EMP-BA26-001,2026-10,25000,4000,1000,1000,26,ATT-BA26-001

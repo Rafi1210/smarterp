@@ -1,0 +1,7 @@
+external_id,name,email,country,phone,contact_person,address,registration_no
+CUS-BA26-001,Harbor Apparel Trading (Synthetic),buying1@business-pack.example,BD,,Synthetic purchasing desk,Training data only,SYN-BA26-001
+CUS-BA26-002,Brookline Clothing (Synthetic),buying2@business-pack.example,BD,,Synthetic purchasing desk,Training data only,SYN-BA26-002
+CUS-BA26-003,Elm Street Sourcing (Synthetic),buying3@business-pack.example,BD,,Synthetic purchasing desk,Training data only,SYN-BA26-003
+CUS-BA26-004,Cloud Nine Retail (Synthetic),buying4@business-pack.example,BD,,Synthetic purchasing desk,Training data only,SYN-BA26-004
+CUS-BA26-005,Aster Buying House (Synthetic),buying5@business-pack.example,BD,,Synthetic purchasing desk,Training data only,SYN-BA26-005
+CUS-BA26-006,Cedar Outfitters (Synthetic),buying6@business-pack.example,BD,,Synthetic purchasing desk,Training data only,SYN-BA26-006

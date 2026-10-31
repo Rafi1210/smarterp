@@ -20,6 +20,7 @@ function runLocalChecks(root, source) {
   writeContext(root, localContext);
   const env = testEnvironment(source);
   run(root, ['scripts/verify-sources.cjs'], env);
+  run(root, ['scripts/verify-business-pack.cjs'], env);
   run(root, ['--test', 'tests/unit.test.cjs'], env);
 }
 function main() {

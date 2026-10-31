@@ -1,0 +1,241 @@
+{
+  "id": "business-analysis-ba26-v1",
+  "created": "2026-10-31",
+  "namespace": "smarterp-demo",
+  "source": "SmartERP authored synthetic training data; no actual buyer, supplier or employee data.",
+  "dates": "Original synthetic business dates are explicit ISO dates. They are not rewritten on upload. Production/delivery/invoice/payment dates are selected when performing the live training actions.",
+  "warnings": [
+    "All imported transactional records remain Draft. Upload does not approve, reserve stock, post invoices or pay salaries.",
+    "Use only in a synthetic Operations context. Original Northwind/UCI namespaces and source manifests are separate.",
+    "CSV money is BDT. Fabric quantities are kg; finished quantities are pieces. Do not add these units.",
+    "The optional 48 inquiries are not historical posted revenue and do not count as confirmed orders until an explicit quotation/confirmation.",
+    "The focused flow assumes its new fabric item has no earlier stock movements. Existing demo item balances are unrelated.",
+    "Payments must use the actual posting/obligation date; create them from the current linked invoice/payroll form.",
+    "A 30-day customer invoice term creates a not-yet-due balance initially. No overdue data or collection is fabricated.",
+    "This pack is a business-correctness demonstration, not a load benchmark, profit calculation or statutory payroll/accounting dataset."
+  ],
+  "focus": {
+    "sales": "SO-BA26-0001",
+    "finished_item": "FG-BA26-TEE-001",
+    "fabric_item": "RM-BA26-COTTON-180",
+    "bom": "BOM-BA26-TEE-001",
+    "quantity_pieces": 10000,
+    "fabric_kg": 2200,
+    "opening_kg": 1400,
+    "purchase_kg": 800,
+    "purchase_rate_bdt": 500,
+    "invoice_bdt": 4500000,
+    "customer_receipt_bdt": 2000000,
+    "supplier_payment_bdt": 400000,
+    "salary_payment_bdt": 29000,
+    "final_ar_bdt": 2500000,
+    "final_ap_bdt": 0,
+    "final_salary_payable_bdt": 0,
+    "selected_event_net_cash_bdt": 1571000
+  },
+  "quick_analysis": {
+    "from": "2026-10-01",
+    "to": "2026-10-31",
+    "confirm_patterns": [
+      "SO-BA26-P041",
+      "SO-BA26-P042",
+      "SO-BA26-P043",
+      "SO-BA26-P044",
+      "SO-BA26-P045",
+      "SO-BA26-P046",
+      "SO-BA26-P047",
+      "SO-BA26-P048"
+    ],
+    "notes": "With the focus order confirmed/delivered and these eight inquiries quoted/confirmed: current 5 orders BDT 7,642,500; previous 4 orders BDT 3,920,000; repeat buyers 1 of 3; two previous buyers inactive."
+  },
+  "files": [
+    {
+      "file": "01-buyers.csv",
+      "resource": "customers",
+      "rows": 6,
+      "columns": [
+        "external_id",
+        "name",
+        "email",
+        "country",
+        "phone",
+        "contact_person",
+        "address",
+        "registration_no"
+      ],
+      "bytes": 894,
+      "sha256": "7e06fb456b1fe8c9755106133e39abb687e97e9d2f8b9939b37579efd97c38e2",
+      "phase": "Setup",
+      "upload_role": "operations"
+    },
+    {
+      "file": "02-suppliers.csv",
+      "resource": "suppliers",
+      "rows": 3,
+      "columns": [
+        "external_id",
+        "name",
+        "email",
+        "country"
+      ],
+      "bytes": 275,
+      "sha256": "782c0a3d6847c34e445dcc6df8298800434fd5c663f70fcec491075b47e8be93",
+      "phase": "Setup",
+      "upload_role": "operations"
+    },
+    {
+      "file": "03-items.csv",
+      "resource": "items",
+      "rows": 2,
+      "columns": [
+        "external_id",
+        "name",
+        "uom",
+        "kind",
+        "reorder_level"
+      ],
+      "bytes": 175,
+      "sha256": "832983dff84b4ccb34de9d21d6182c2f6834d108dd2bb8133d8465b777a12b7c",
+      "phase": "Setup",
+      "upload_role": "operations"
+    },
+    {
+      "file": "04-employees.csv",
+      "resource": "employees",
+      "rows": 1,
+      "columns": [
+        "external_id",
+        "name",
+        "department"
+      ],
+      "bytes": 69,
+      "sha256": "403e01383b009fc46241ee4e43eb328f9329237b5e056762f3a8ece6ab59c5d9",
+      "phase": "People setup",
+      "upload_role": "finance"
+    },
+    {
+      "file": "05-bom.csv",
+      "resource": "bom",
+      "rows": 1,
+      "columns": [
+        "external_id",
+        "name",
+        "finished_item_id",
+        "component_item_id",
+        "kg_per_piece"
+      ],
+      "bytes": 158,
+      "sha256": "c1481175e86db855e352d75f8464f4b8778745d8e8596b44cf3832aa45f5d3ab",
+      "phase": "Request BOM review; Admin approves",
+      "upload_role": "operations"
+    },
+    {
+      "file": "06-opening-stock.csv",
+      "resource": "openings",
+      "rows": 1,
+      "columns": [
+        "external_id",
+        "item_id",
+        "quantity",
+        "date"
+      ],
+      "bytes": 83,
+      "sha256": "1c1b8ccdbb91394a381a210b59550f406e2ce3c44209089b9c741613fb5d95c2",
+      "phase": "Post opening stock",
+      "upload_role": "operations"
+    },
+    {
+      "file": "07-focus-sales.csv",
+      "resource": "sales",
+      "rows": 1,
+      "columns": [
+        "external_id",
+        "line_id",
+        "date",
+        "item_id",
+        "quantity",
+        "rate",
+        "customer_id"
+      ],
+      "bytes": 124,
+      "sha256": "aefd9c419724ba4162be3dcba4412fff17fb9bb50d625ec1ba64d76cad6ff439",
+      "phase": "Quote then confirm",
+      "upload_role": "operations"
+    },
+    {
+      "file": "08-merchandising.csv",
+      "resource": "merchandising",
+      "rows": 1,
+      "columns": [
+        "external_id",
+        "source_sales_id",
+        "bom_id",
+        "style_code",
+        "style_name",
+        "fabric_spec",
+        "delivery_date",
+        "buyer_reference",
+        "notes"
+      ],
+      "bytes": 326,
+      "sha256": "179737f1737163c08f1a87decac1a41db9752b866cca866f7f522132125e2f12",
+      "phase": "After focus SO confirmed and BOM approved; request review",
+      "upload_role": "operations"
+    },
+    {
+      "file": "09-attendance.csv",
+      "resource": "attendance",
+      "rows": 1,
+      "columns": [
+        "external_id",
+        "employee_id",
+        "period",
+        "scheduled_days",
+        "present_days",
+        "paid_leave_days"
+      ],
+      "bytes": 117,
+      "sha256": "193ce1e81b613db9661c8de2a970cb7929e9a6810ed1efb2252236a7a8ed99df",
+      "phase": "Review attendance",
+      "upload_role": "finance"
+    },
+    {
+      "file": "10-payroll.csv",
+      "resource": "payroll",
+      "rows": 1,
+      "columns": [
+        "external_id",
+        "employee_id",
+        "period",
+        "basic",
+        "allowance",
+        "extra",
+        "deduction",
+        "attendance_days",
+        "attendance_id"
+      ],
+      "bytes": 164,
+      "sha256": "3e4d3f485e5ca7ac9b56fd1ca3633df97b1edf5f189582e2d0e1a22734f01fda",
+      "phase": "Review components; Finance submits; Admin approves",
+      "upload_role": "finance"
+    },
+    {
+      "file": "11-sales-pattern-inquiries.csv",
+      "resource": "sales",
+      "rows": 48,
+      "columns": [
+        "external_id",
+        "line_id",
+        "date",
+        "item_id",
+        "quantity",
+        "rate",
+        "customer_id"
+      ],
+      "bytes": 3120,
+      "sha256": "dbe15d4a3b90789fd388085918159eb28d0535d9c83492f48bb1a1ae7faca347",
+      "phase": "Optional demand history; all 48 import as Draft; confirm only selected real training commitments",
+      "upload_role": "operations"
+    }
+  ]
+}

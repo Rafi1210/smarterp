@@ -1,0 +1,2 @@
+external_id,source_sales_id,bom_id,style_code,style_name,fabric_spec,delivery_date,buyer_reference,notes
+MER-BA26-001,SO-BA26-0001,BOM-BA26-TEE-001,BA26-BASIC-TEE,Training crew-neck T-shirt,Cotton single jersey 180 GSM; 0.22 kg fabric per piece,2026-12-15,SYN-BUYER-PO-0001,Full quantity only; synthetic operational training.

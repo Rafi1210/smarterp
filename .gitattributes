@@ -1,2 +1,3 @@
 # Keep manifest-verified source files byte-for-byte on Windows and Linux.
 /data/source/** -text
+/data/business-pack/** -text
